@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>preview</title>
+<style>
+  html,body{margin:0;padding:0;background:#070c16}
+  .canvas{
+    width:1200px;height:630px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(900px 500px at 78% 38%, rgba(127,212,255,.22), transparent 62%),
+      radial-gradient(700px 420px at 12% 88%, rgba(255,143,199,.12), transparent 65%),
+      linear-gradient(165deg,#0d1a2c 0%,#080f1c 55%,#05080f 100%);
+    display:flex;align-items:center;gap:30px;padding:0 56px;
+    font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#eaf2ff;
+  }
+  .text{flex:0 0 520px;position:relative;z-index:2}
+  .kicker{
+    font-size:19px;letter-spacing:.18em;text-transform:uppercase;color:#7fd4ff;
+    font-weight:700;margin:0 0 18px;
+  }
+  h1{font-size:62px;line-height:1.02;margin:0 0 20px;letter-spacing:-.02em;font-weight:800}
+  h1 em{font-style:normal;color:#7fd4ff;display:block}
+  p{font-size:23px;line-height:1.35;color:#a8bcd8;margin:0 0 26px;max-width:470px}
+  .url{
+    display:inline-block;font-size:19px;font-weight:700;color:#cfe9ff;
+    border:1px solid rgba(127,212,255,.35);border-radius:999px;padding:9px 18px;
+    background:rgba(127,212,255,.08);
+  }
+  .art{position:relative;flex:1;height:630px;display:flex;align-items:center;justify-content:center}
+  .ice{width:560px;height:auto;display:block;filter:drop-shadow(0 30px 60px rgba(42,108,246,.35))}
+  .level{
+    position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:7px;font-size:15px;color:#8fb2d6;
+  }
+  .level span{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .level i{display:block;width:16px;height:3px;border-radius:2px;background:#7fd4ff;opacity:.75}
+  .level span:nth-child(7) i{background:#b477bd}
+  .level span:nth-child(8) i{background:#d96aa4}
+  .level span:nth-child(9) i{background:#f25d84}
+  .level span:nth-child(10) i{background:#ff4d6d}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="text">
+    <p class="kicker">120 стикеров · 10 уровней</p>
+    <h1>айсберг<em>ку-ку курилки</em></h1>
+    <p>Разложили стикеры по токсичности: от святой воды до дна пробито.</p>
+    <span class="url">zik69.github.io/aisberg-kurilki</span>
+  </div>
+  <div class="art">
+    <svg class="ice" viewBox="0 0 320 240" aria-hidden="true">
+      <defs>
+        <linearGradient id="tip" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#bfe4ff"/>
+        </linearGradient>
+        <linearGradient id="mass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8edcff" stop-opacity=".95"/>
+          <stop offset=".32" stop-color="#2b6f9e" stop-opacity=".92"/>
+          <stop offset="1" stop-color="#0a1930" stop-opacity=".98"/>
+        </linearGradient>
+      </defs>
+      <polygon points="160,12 206,98 114,98" fill="url(#tip)"/>
+      <polygon points="160,12 179,64 156,98 114,98" fill="#ffffff" opacity=".45"/>
+      <polygon points="114,98 206,98 252,140 292,204 262,240 58,240 28,204 68,140" fill="url(#mass)"/>
+      <polygon points="160,98 206,98 232,142 172,182 120,136" fill="#ffffff" opacity=".09"/>
+      <polygon points="114,98 132,138 110,196 80,150" fill="#ffffff" opacity=".06"/>
+      <path d="M0,98 q20,-5 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0"
+            fill="none" stroke="#7fd4ff" stroke-opacity=".6" stroke-width="2"/>
+    </svg>
+    <div class="level">
+      <span><i></i>1</span><span><i></i>2</span><span><i></i>3</span><span><i></i>4</span>
+      <span><i></i>5</span><span><i></i>6</span><span><i></i>7</span><span><i></i>8</span>
+      <span><i></i>9</span><span><i></i>10</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
