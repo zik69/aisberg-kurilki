@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080d18">
+<title>ку-ку курилка — айсберг</title>
+<style>
+  :root{
+    --bg:#080d18;
+    --ink:#eaf2ff;
+    --dim:#93a6c4;
+    --line:rgba(160,200,255,.16);
+    --accent:#7fd4ff;
+    --pink:#ff8fc7;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    overflow-x:hidden;
+    padding-bottom:calc(32px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+  header{padding:18px 0 8px}
+  h1{font-size:clamp(26px,8vw,38px);line-height:1.05;margin:0 0 6px;letter-spacing:-.02em}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 14px}
+  .btn-open{
+    display:inline-flex;align-items:center;gap:8px;
+    min-height:44px;padding:0 16px;border-radius:999px;
+    background:linear-gradient(180deg,#2a6cf6,#1b4bc4);
+    color:#fff;text-decoration:none;font-weight:600;font-size:15px;
+    box-shadow:0 6px 20px rgba(42,108,246,.35);
+  }
+  .btn-open:active{transform:translateY(1px)}
+
+  .iceberg{position:relative;margin:18px 0 0;height:150px}
+  .iceberg svg{width:100%;height:100%;display:block}
+  .waterline{
+    position:absolute;left:0;right:0;top:62%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(127,212,255,.55),transparent);
+  }
+  .waterline::after{
+    content:"уровень воды";position:absolute;right:0;top:4px;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(127,212,255,.6)
+  }
+
+  .controls{
+    position:sticky;top:0;z-index:30;
+    background:rgba(8,13,24,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+    padding:8px 0 6px;margin:10px 0 0;
+  }
+  .seg{display:flex;gap:6px;margin:0 0 6px}
+  .seg button{
+    flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);
+    background:rgba(255,255,255,.03);color:var(--dim);
+    font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .seg button[aria-pressed="true"]{
+    background:linear-gradient(180deg,rgba(127,212,255,.22),rgba(127,212,255,.10));
+    border-color:rgba(127,212,255,.55);color:#fff;
+  }
+  .senders{
+    display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .senders::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(255,255,255,.03);
+    color:var(--dim);font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap;
+  }
+  .chip[aria-pressed="true"]{background:rgba(255,143,199,.16);border-color:rgba(255,143,199,.6);color:#fff}
+  .chip.anon{border-style:dashed}
+  .hint{color:var(--dim);font-size:12px;margin:2px 0 0}
+
+  .layer{
+    position:relative;margin:12px 0;border-radius:var(--radius);
+    border:1px solid var(--line);overflow:hidden;
+    background:var(--layer-bg);
+  }
+  .layer-head{display:flex;align-items:baseline;gap:10px;padding:14px 14px 6px}
+  .layer-num{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--layer-ink);
+    opacity:.75;font-weight:700;
+  }
+  .layer-title{font-size:15px;font-weight:700;color:var(--layer-ink)}
+  .layer-mood{margin-left:auto;font-size:12px;color:var(--layer-ink);opacity:.6;text-align:right}
+  .grid{
+    display:grid;gap:8px;padding:0 10px 14px;
+    grid-template-columns:repeat(2,1fr);
+  }
+  @media(min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:720px){.grid{grid-template-columns:repeat(4,1fr)}}
+  .card{
+    position:relative;display:block;width:100%;padding:0;border:0;cursor:pointer;
+    background:transparent;border-radius:12px;overflow:hidden;
+    min-height:44px;transition:opacity .2s,transform .12s;
+  }
+  .card img{display:block;width:100%;height:auto;border-radius:12px;background:#111a2b}
+  .card:active{transform:scale(.97)}
+  .card.dim{opacity:.18}
+  .card .badge{
+    position:absolute;left:6px;bottom:6px;
+    font-size:10px;font-weight:700;letter-spacing:.04em;
+    padding:2px 6px;border-radius:6px;
+    background:rgba(8,13,24,.78);color:var(--accent);
+  }
+  .empty{color:var(--dim);font-size:13px;padding:0 14px 16px}
+
+  .anon{
+    margin:20px 0 0;border-radius:var(--radius);
+    border:1px dashed rgba(160,200,255,.34);
+    background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+    overflow:hidden;
+  }
+  .anon-head{display:flex;align-items:baseline;gap:10px;padding:14px 14px 4px;flex-wrap:wrap}
+  .anon-title{font-size:15px;font-weight:700;color:#cfe3ff}
+  .anon-count{margin-left:auto;font-size:12px;color:var(--dim)}
+  .anon-note{color:var(--dim);font-size:12.5px;padding:0 14px 10px;line-height:1.45}
+
+  .backdrop{
+    position:fixed;inset:0;background:rgba(3,6,12,.72);z-index:50;
+    opacity:0;pointer-events:none;transition:opacity .2s;
+  }
+  .backdrop.on{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    max-height:88vh;overflow-y:auto;overscroll-behavior:contain;
+    background:#0d1526;border-radius:22px 22px 0 0;
+    border-top:1px solid rgba(127,212,255,.28);
+    transform:translateY(101%);transition:transform .26s cubic-bezier(.22,.8,.3,1);
+    padding:10px 16px calc(20px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling:touch;
+  }
+  .sheet.on{transform:translateY(0)}
+  .grabber{width:44px;height:4px;border-radius:99px;background:rgba(160,200,255,.3);margin:2px auto 12px}
+  .sheet-img{width:100%;height:auto;border-radius:14px;background:#111a2b;display:block}
+  .sheet-meta{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 8px}
+  .tag{
+    font-size:12px;padding:4px 9px;border-radius:999px;
+    background:rgba(127,212,255,.12);border:1px solid rgba(127,212,255,.3);color:#cfe9ff;
+  }
+  .tag.muted{background:rgba(255,255,255,.04);border-color:var(--line);color:var(--dim)}
+  .quote{
+    margin:10px 0 14px;padding:12px 14px;border-left:3px solid rgba(255,143,199,.6);
+    background:rgba(255,255,255,.03);border-radius:0 12px 12px 0;
+    font-size:15px;line-height:1.5;color:#e6efff;
+  }
+  .bars{display:grid;gap:8px;margin:0 0 14px}
+  .bar-row{display:grid;grid-template-columns:104px 1fr 28px;align-items:center;gap:10px;font-size:12.5px;color:var(--dim)}
+  .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2a6cf6,#7fd4ff)}
+  .bar-row b{color:var(--ink);font-size:13px;text-align:right}
+  .sheet-actions{display:flex;gap:8px}
+  .sheet-actions a,.sheet-actions button{
+    flex:1;min-height:46px;display:inline-flex;align-items:center;justify-content:center;
+    border-radius:12px;font:inherit;font-size:14px;font-weight:600;text-decoration:none;
+    border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);cursor:pointer;
+  }
+  .sheet-actions a{background:linear-gradient(180deg,#2a6cf6,#1b4bc4);border-color:transparent;color:#fff}
+  footer{color:var(--dim);font-size:12px;text-align:center;padding:22px 0 0;line-height:1.6}
+  footer a{color:var(--accent)}
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>айсберг <span>ку-ку курилки</span></h1>
+    <p class="sub" id="sub">Раскладываем стикеры по глубине. Чем ниже — тем хуже.</p>
+    <a class="btn-open" href="https://t.me/addstickers/kykykyrilka_by_TgEmodziBot" target="_blank" rel="noopener">
+      Открыть пак в Telegram ↗
+    </a>
+  </header>
+
+  <div class="iceberg">
+    <svg viewBox="0 0 320 150" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="tip" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d6ebff"/>
+        </linearGradient>
+        <linearGradient id="mass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9ad9ff" stop-opacity=".82"/>
+          <stop offset=".55" stop-color="#2f7bb0" stop-opacity=".75"/>
+          <stop offset="1" stop-color="#0a1830" stop-opacity=".95"/>
+        </linearGradient>
+      </defs>
+      <polygon points="160,12 194,92 126,92" fill="url(#tip)"/>
+      <polygon points="160,12 172,58 158,92 126,92" fill="#ffffff" opacity=".55"/>
+      <polygon points="126,92 194,92 226,116 250,150 70,150 94,116" fill="url(#mass)"/>
+      <polygon points="160,92 194,92 210,116 160,140 130,110" fill="#ffffff" opacity=".10"/>
+    </svg>
+    <div class="waterline"></div>
+  </div>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Критерий сортировки">
+      <button type="button" data-crit="toxicity" aria-pressed="false">токсичность</button>
+      <button type="button" data-crit="originality" aria-pressed="true">оригинальность</button>
+    </div>
+    <div class="senders" id="senders"></div>
+    <p class="hint" id="hint"></p>
+  </div>
+
+  <main id="layers"></main>
+
+  <footer>
+    Оценки посчитаны по тексту стикеров: имена и статусы вырезаны, чтобы не искажать метрики.
+    Токсичность нормирована по максимуму внутри пака, оригинальность — ранговая шкала.<br>
+    Пак: <a href="https://t.me/addstickers/kykykyrilka_by_TgEmodziBot" target="_blank" rel="noopener">kykykyrilka_by_TgEmodziBot</a>
+  </footer>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Стикер"></div>
+
+<script>
+const STICKERS = [{"id":"001","file":"stickers/001.webp","senders":["кира обнимай","бюбють"],"statuses":["обобряет буллинг"],"text":"я пропустила / а почему ты воняешь","kindness":1,"toxicity":3,"originality":8},{"id":"002","file":"stickers/002.webp","senders":["кира обнимай","бюбють"],"statuses":["обобряет буллинг","мадам говно"],"text":"я не шучу, она прям очень много весит / грустно что я воняю","kindness":1,"toxicity":3,"originality":3},{"id":"003","file":"stickers/003.webp","senders":["бюбють"],"statuses":["мадам говно"],"text":"сидит блять стокилограммовая Лейси / за аноном и ноет какая неприятная и / уебищная незнакомка с интернета","kindness":1,"toxicity":8,"originality":6},{"id":"004","file":"stickers/004.webp","senders":["кира обнимай"],"statuses":["обобряет буллинг"],"text":"ты ей в рот срала? / подруга","kindness":4,"toxicity":3,"originality":7},{"id":"005","file":"stickers/005.webp","senders":["бюбють"],"statuses":["мадам говно"],"text":"инфо ми / 1 4у.о / рпп / 165см / 165кг / люблю геншин / люблю кпоп / люблю яой","kindness":10,"toxicity":1,"originality":9},{"id":"006","file":"stickers/006.webp","senders":["солевой никита228"],"statuses":["моя попа это моя попа"],"text":"","kindness":1,"toxicity":1,"originality":1},{"id":"007","file":"stickers/007.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"нов / Жестоко рассказывать / правду. Расстроится ещё / Ну, что она вонючка ебаная","kindness":1,"toxicity":1,"originality":3},{"id":"008","file":"stickers/008.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"новн / Сиськи сисюлечки сисяндопалы","kindness":1,"toxicity":1,"originality":7},{"id":"009","file":"stickers/009.webp","senders":["мать ангелочка"],"statuses":[],"text":"пхахахаха лошары покакать не могут","kindness":1,"toxicity":1,"originality":7},{"id":"010","file":"stickers/010.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"новн / Отстаньте от чужой груди, свои / прыщи выдавливайте в пушап","kindness":1,"toxicity":1,"originality":7},{"id":"011","file":"stickers/011.webp","senders":[],"statuses":["местная туча"],"text":"sarasvati / как же я надеюсь что ты прочитаешь / это сообщение и у тебя вылезет / геморрой","kindness":1,"toxicity":1,"originality":9},{"id":"012","file":"stickers/012.webp","senders":["мать ангелочка"],"statuses":[],"text":"ну ты сравнила другие уебищные чаты / и наши где лукашенко и влад ленин","kindness":1,"toxicity":3,"originality":7},{"id":"013","file":"stickers/013.webp","senders":["кира обнимай"],"statuses":["обобряет буллинг"],"text":"смотрю на них и не могу налюбоваться / ну такие нежные / умрут.“","kindness":4,"toxicity":1,"originality":7},{"id":"014","file":"stickers/014.webp","senders":["кира обнимай"],"statuses":[],"text":"обобряет булпинг / между ног будет нюхать влажным носиком","kindness":1,"toxicity":1,"originality":4},{"id":"015","file":"stickers/015.webp","senders":["кира обнимай"],"statuses":["доксерша"],"text":"что вы хотели бы взять с собой в гроб / только лампы не хватает / сюда к сожалению","kindness":1,"toxicity":1,"originality":3},{"id":"016","file":"stickers/016.webp","senders":[],"statuses":["местная туча"],"text":"fe1is / Блять ебанутая / Ебало тебе набить и в психушку на / вязки. У меня только одна агрессия / Ты реально ебнутая","kindness":1,"toxicity":6,"originality":10},{"id":"017","file":"stickers/017.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"Я бы убилась / или на кровать нагадила","kindness":1,"toxicity":1,"originality":7},{"id":"018","file":"stickers/018.webp","senders":[],"statuses":[],"text":"мира расщепление / орпистат / ахаха! дав так мои друзья жрут! а я / сегодня голодаю. Вес +1 так что будет мне / наказание!!! и хрен я больше поем / гречки сраной","kindness":4,"toxicity":1,"originality":8},{"id":"019","file":"stickers/019.webp","senders":["кира обнимай"],"statuses":["обобряет буллинг"],"text":"ну не знаю может быть я просто / предполагаю что нууу эм как бы это / сказать ну короче извини но мне / кажется ты ходила писять в течение / дня","kindness":1,"toxicity":1,"originality":2},{"id":"020","file":"stickers/020.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"Ща прохожу другой тест / Я докажу что ебанутая / мне есть тут место","kindness":1,"toxicity":1,"originality":3},{"id":"021","file":"stickers/021.webp","senders":["кира обнимай"],"statuses":["доксерша","обобряет буллинг"],"text":"теперь моя мечта / это очень уродливо","kindness":1,"toxicity":3,"originality":2},{"id":"022","file":"stickers/022.webp","senders":[],"statuses":[],"text":"Анонимный комментарий / у нее черты лица гнилозубой / малоумной крестьянки, надеюсь ее / отпиздят / BiessensoUnasE репрессирована / это не я писала","kindness":1,"toxicity":3,"originality":9},{"id":"023","file":"stickers/023.webp","senders":[],"statuses":["доксерша"],"text":"ничего страшного. в каком / смысле хочешь, в таком и / понимай","kindness":1,"toxicity":1,"originality":7},{"id":"024","file":"stickers/024.webp","senders":["мать ангелочка"],"statuses":[],"text":"всех люблю / а мы тебя нет","kindness":4,"toxicity":1,"originality":5},{"id":"025","file":"stickers/025.webp","senders":["кира обнимай"],"statuses":["обобряет буллинг"],"text":"у меня мания величия я считаю / себя гениальным творцом","kindness":1,"toxicity":1,"originality":4},{"id":"026","file":"stickers/026.webp","senders":["* elle mors"],"statuses":["волонтёр"],"text":"да сколько можно сука отвечать / завали ты свое ебало все поняли уже","kindness":1,"toxicity":6,"originality":3},{"id":"027","file":"stickers/027.webp","senders":["бюбють"],"statuses":["местная туча"],"text":"felis / у бютя появились друзья, но мама / купила стейк лосося на 100 грамм / меньше разлюбила наверное / мадам гозно / да завали сосалку","kindness":7,"toxicity":1,"originality":10},{"id":"028","file":"stickers/028.webp","senders":["* elle mors","Алина Руслановна"],"statuses":["волонтёр","самый умный брат"],"text":"к сожалению / возможно к счастью / похуй","kindness":4,"toxicity":1,"originality":7},{"id":"029","file":"stickers/029.webp","senders":["мать ангелочка"],"statuses":[],"text":"это для пилатеса что то / felis мес ная туча / ф- дада / а для напилатеса что","kindness":1,"toxicity":1,"originality":8},{"id":"030","file":"stickers/030.webp","senders":["V\u0027ad Ienin"],"statuses":[],"text":"Заткнись, дебильная! Ты чему тут / учишь, орать на родителей!? / Пиздить тебя надо было в детстве","kindness":1,"toxicity":8,"originality":5},{"id":"031","file":"stickers/031.webp","senders":["Правда"],"statuses":["клофелинщица"],"text":"Ебаная альфа не понимает / как пользоваться мемом","kindness":1,"toxicity":1,"originality":4},{"id":"032","file":"stickers/032.webp","senders":["бюбють"],"statuses":["мадам говно"],"text":"Мы все ублюдки, я особенно","kindness":1,"toxicity":1,"originality":2},{"id":"033","file":"stickers/033.webp","senders":[],"statuses":[],"text":"chugaevna / почему ваще на семью не похуй","kindness":1,"toxicity":1,"originality":9},{"id":"034","file":"stickers/034.webp","senders":["бюбють"],"statuses":["мадам говно"],"text":"все хватит не отвечай мне / пожалуйста мне вчера хватило","kindness":1,"toxicity":1,"originality":2},{"id":"035","file":"stickers/035.webp","senders":["Алина Руслановна"],"statuses":["самый умный брат"],"text":"Я хочу чтобы все просили у / меня прощения в слезах и / каялись за то что они бляди","kindness":1,"toxicity":1,"originality":2},{"id":"036","file":"stickers/036.webp","senders":["бюбють"],"statuses":["доксерша"],"text":"bartzabe1 О / ты же ... ты можешь узнать кто я / S радостно","kindness":4,"toxicity":1,"originality":10},{"id":"037","file":"stickers/037.webp","senders":["кира обнимай"],"statuses":[],"text":"обобряет / теперь тебе придётся доедать тараканов","kindness":1,"toxicity":1,"originality":4},{"id":"038","file":"stickers/038.webp","senders":["бюбють"],"statuses":["мадам говно"],"text":"я не помню что ты говорила / но вроде несла хуйню","kindness":1,"toxicity":1,"originality":2},{"id":"039","file":"stickers/039.webp","senders":[],"statuses":[],"text":"Лукашенко 8 / Ты Крутая это диагноз","kindness":1,"toxicity":1,"originality":8},{"id":"040","file":"stickers/040.webp","senders":["Правда"],"statuses":["клофелинщица"],"text":"Романтика мама/сын","kindness":4,"toxicity":1,"originality":7},{"id":"041","file":"stickers/041.webp","senders":[],"statuses":[],"text":"sochnik / господи","kindness":1,"toxicity":1,"originality":10},{"id":"042","file":"stickers/042.webp","senders":["кира обнимай"],"statuses":[],"text":"Петр / Но здоровье важнее / если я завтра проснусь с / привесом никакой мне еды нахуй","kindness":1,"toxicity":3,"originality":4},{"id":"043","file":"stickers/043.webp","senders":[],"statuses":[],"text":"типичная они/их которая еще / детей ненавидит и мужчин","kindness":1,"toxicity":1,"originality":7},{"id":"044","file":"stickers/044.webp","senders":["кира обнимай","* elle mors"],"statuses":[],"text":"кого душила / кого душила / сука / сука","kindness":1,"toxicity":10,"originality":2},{"id":"045","file":"stickers/045.webp","senders":["Алина Руслановна"],"statuses":[],"text":"Щас напишу им какие они уебаны жирные","kindness":1,"toxicity":6,"originality":7},{"id":"046","file":"stickers/046.webp","senders":["* elle mors"],"statuses":[],"text":"очень плохо очень / если что это тонтег сарк","kindness":1,"toxicity":1,"originality":1},{"id":"047","file":"stickers/047.webp","senders":[],"statuses":[],"text":"епе mors / словами со мной / разговаривай а не гифками","kindness":1,"toxicity":1,"originality":9},{"id":"048","file":"stickers/048.webp","senders":["D!ego-BrndOw ИЗОЛЯТ"],"statuses":[],"text":"Креветка / 000, У МЕНЯ ТАКИЕЖЕ НОСКЬ / понятно, выкидываю","kindness":1,"toxicity":1,"originality":8},{"id":"049","file":"stickers/049.webp","senders":["* elle mors"],"statuses":[],"text":"я думала ты просто как / олигофрен пишешь","kindness":1,"toxicity":1,"originality":4},{"id":"050","file":"stickers/050.webp","senders":["бюбють"],"statuses":[],"text":"ВАУ МЕНЯ ЛЮБЯТ ЗА / ТУШУРРРРЗГ?ГР","kindness":1,"toxicity":1,"originality":3},{"id":"051","file":"stickers/051.webp","senders":["Алина Руслановна"],"statuses":[],"text":"у меня отлетают бляди / Хуева","kindness":1,"toxicity":1,"originality":3},{"id":"052","file":"stickers/052.webp","senders":[],"statuses":[],"text":"Ceph / поэтому / я несу хуйню / и я сучка / все","kindness":1,"toxicity":1,"originality":9},{"id":"053","file":"stickers/053.webp","senders":[],"statuses":[],"text":"Катерина / САХАР-ЯДЭДля свиней","kindness":1,"toxicity":1,"originality":7},{"id":"054","file":"stickers/054.webp","senders":["Алина Руслановна"],"statuses":[],"text":"сука / Просто дайте мне и будет свага","kindness":1,"toxicity":3,"originality":2},{"id":"055","file":"stickers/055.webp","senders":["Алина Руслановна","кира обнимай"],"statuses":[],"text":"Четыре маргариты. Срочно / Размером с аквариум для акул","kindness":1,"toxicity":1,"originality":8},{"id":"056","file":"stickers/056.webp","senders":["Алина Руслановна"],"statuses":[],"text":"Сука да съешьте вы уже какашку","kindness":1,"toxicity":3,"originality":2},{"id":"057","file":"stickers/057.webp","senders":["Правда","кира обнимай"],"statuses":[],"text":"Forwarded from More More / То есть вам уже изначально не / дают шанса стать топчикамиЭ / зато я типчик","kindness":1,"toxicity":1,"originality":9},{"id":"058","file":"stickers/058.webp","senders":["кира обнимай"],"statuses":[],"text":"тебе не надоело ты похожа на говно","kindness":1,"toxicity":3,"originality":3},{"id":"059","file":"stickers/059.webp","senders":[],"statuses":[],"text":"мвя / Я еще червей люблю из под / земли доставать и высасывать","kindness":4,"toxicity":1,"originality":8},{"id":"060","file":"stickers/060.webp","senders":["мира кататония"],"statuses":[],"text":"ОРЛИСТАТ ОЧЕНЬ ЭФФЕКТИВЕН / НА СЕБЕ ПОПРОБОВАЛА . И / ПРИНИМАТЬ ЕГО МОЖНО ВСЕМ / ДАЖЕ ДИАБЕТИКАМ ...ф“","kindness":1,"toxicity":1,"originality":5},{"id":"061","file":"stickers/061.webp","senders":["Правда"],"statuses":[],"text":"имбирь / привет ты здорова / Привет похоже на то","kindness":7,"toxicity":1,"originality":8},{"id":"062","file":"stickers/062.webp","senders":["Правда"],"statuses":[],"text":"и по барбоскиным / Парафилия","kindness":1,"toxicity":1,"originality":8},{"id":"063","file":"stickers/063.webp","senders":["Правда","helligkeit"],"statuses":[],"text":"слеш / беременность / нц 21 / надеюсь вы все это читали","kindness":1,"toxicity":1,"originality":8},{"id":"064","file":"stickers/064.webp","senders":["Правда"],"statuses":[],"text":"А в сердци","kindness":1,"toxicity":1,"originality":8},{"id":"065","file":"stickers/065.webp","senders":[],"statuses":[],"text":"Qutiqu / Как так похудеть?????????? / Не жри / Не жри мразь","kindness":1,"toxicity":3,"originality":9},{"id":"066","file":"stickers/066.webp","senders":["helligkeit"],"statuses":[],"text":"ты тупые или жирные / я комбо","kindness":1,"toxicity":6,"originality":8},{"id":"067","file":"stickers/067.webp","senders":["Алина Руслановна"],"statuses":[],"text":"Ну типа бля пидарасы сука хуй сосут да / не мой типа бля дайте уже хули типа ээээ","kindness":1,"toxicity":3,"originality":4},{"id":"068","file":"stickers/068.webp","senders":["Алина Руслановна","r8mka"],"statuses":[],"text":"какова ваша мотивация жить / Уебанов гасить","kindness":1,"toxicity":6,"originality":8},{"id":"069","file":"stickers/069.webp","senders":["бюбють"],"statuses":[],"text":"я буду очень жирной и огромной у / меня желудок размером с галактику / и если я открою рот вас засосет","kindness":1,"toxicity":3,"originality":4},{"id":"070","file":"stickers/070.webp","senders":["Алина Руслановна"],"statuses":[],"text":"МАМАШУ ПИДОРКМА / А,ты МНЕ НичКо НЕ ЕБАЛ / понятно","kindness":4,"toxicity":6,"originality":4},{"id":"071","file":"stickers/071.webp","senders":["бюбють"],"statuses":[],"text":"у тебя парник вместо / пизды тк не дышит ничего","kindness":1,"toxicity":3,"originality":5},{"id":"072","file":"stickers/072.webp","senders":["Citty kitty"],"statuses":[],"text":"сколько см у кабана? / Я откуда блять знаю?","kindness":1,"toxicity":3,"originality":8},{"id":"073","file":"stickers/073.webp","senders":["* elle mors","кира обнимай"],"statuses":[],"text":"все нормально / жирная","kindness":1,"toxicity":3,"originality":2},{"id":"074","file":"stickers/074.webp","senders":["helligkeit"],"statuses":[],"text":"бабочка, поцелованная мамой / аной, расправь свои крылья","kindness":1,"toxicity":1,"originality":6},{"id":"075","file":"stickers/075.webp","senders":[],"statuses":[],"text":"я даже не отрицаю что у меня / уебищный вкус но сейчас это / называется нишевый","kindness":1,"toxicity":3,"originality":2},{"id":"076","file":"stickers/076.webp","senders":["helligkeit"],"statuses":[],"text":"я очень хочу диагноз рпп / ведь это так эстетично плюс я / не ем и мама ана забери меня","kindness":4,"toxicity":1,"originality":3},{"id":"077","file":"stickers/077.webp","senders":["Алина Руслановна"],"statuses":[],"text":"Заказала поставку свиных / голов. вам всем пизда","kindness":1,"toxicity":3,"originality":5},{"id":"078","file":"stickers/078.webp","senders":["Правда"],"statuses":[],"text":"","kindness":1,"toxicity":1,"originality":1},{"id":"079","file":"stickers/079.webp","senders":["Правда"],"statuses":[],"text":"Я и кто","kindness":1,"toxicity":1,"originality":5},{"id":"080","file":"stickers/080.webp","senders":["kalsarikännit"],"statuses":[],"text":"понятно / ужасно","kindness":1,"toxicity":3,"originality":6},{"id":"081","file":"stickers/081.webp","senders":["* elle mors"],"statuses":[],"text":"ты видишь тонтег сарказм? нет / я серьезно","kindness":1,"toxicity":1,"originality":6},{"id":"082","file":"stickers/082.webp","senders":["кира обнимай"],"statuses":[],"text":"сука за что я админ","kindness":1,"toxicity":3,"originality":1},{"id":"083","file":"stickers/083.webp","senders":[],"statuses":[],"text":"КЗпат4 / З) в чем проблема просто / курить 5 грамм гашиша в день","kindness":1,"toxicity":1,"originality":9},{"id":"084","file":"stickers/084.webp","senders":["kalsarikännit","Правда"],"statuses":[],"text":"все пока хватит на сегодня этого чата / намасте / Огромное спасибо","kindness":4,"toxicity":1,"originality":4},{"id":"085","file":"stickers/085.webp","senders":["кира обнимай","мира кататония"],"statuses":[],"text":"привес всё равно будет завтра / ураа","kindness":1,"toxicity":1,"originality":4},{"id":"086","file":"stickers/086.webp","senders":[],"statuses":[],"text":"Darilina / Почему я жирная / хавальник закрой просто","kindness":1,"toxicity":3,"originality":10},{"id":"087","file":"stickers/087.webp","senders":[],"statuses":[],"text":"да я мечтаю чтобы все были толстыми","kindness":1,"toxicity":1,"originality":3},{"id":"088","file":"stickers/088.webp","senders":["бюбють","kalsarikännit"],"statuses":[],"text":"к маме / в канализацию","kindness":1,"toxicity":1,"originality":6},{"id":"089","file":"stickers/089.webp","senders":["кира обнимай"],"statuses":[],"text":"у где секс типо бл","kindness":1,"toxicity":1,"originality":6},{"id":"090","file":"stickers/090.webp","senders":["kalsarikännit","Правда"],"statuses":[],"text":"дают / я хочу чего-нибудь / Стринги","kindness":1,"toxicity":1,"originality":6},{"id":"091","file":"stickers/091.webp","senders":["Правда"],"statuses":[],"text":"лопух","kindness":1,"toxicity":1,"originality":6},{"id":"092","file":"stickers/092.webp","senders":["Правда"],"statuses":[],"text":"Не, блевотина то моя. Типа там ж / еда+слюна+желудочный сок мб, то / есть ниче лишнего нет, чем / брезговать то","kindness":1,"toxicity":3,"originality":6},{"id":"093","file":"stickers/093.webp","senders":["Правда"],"statuses":[],"text":"Сколько лет анону / Пытаюсь понять исходя из слова тубзян","kindness":1,"toxicity":1,"originality":5},{"id":"094","file":"stickers/094.webp","senders":["кира обнимай","Правда"],"statuses":[],"text":"Forwarded from Анонимные сообщения / У тебя новое анонимное сообщение / пр ты шлюха и коза. ты злая и у тебя нет / мозгов какашка ха-ха / всем на тебя пооофиг / прр / Свайпни для ответа / Они реально очень позитивные","kindness":1,"toxicity":3,"originality":9},{"id":"095","file":"stickers/095.webp","senders":["Калорья Молекульно́ва"],"statuses":[],"text":"СЯДЬ НА ПОЖИЗНЕННЫЙ ГОЛОД СУКА","kindness":1,"toxicity":3,"originality":2},{"id":"096","file":"stickers/096.webp","senders":["Правда"],"statuses":[],"text":"Я в ремесии","kindness":1,"toxicity":1,"originality":5},{"id":"097","file":"stickers/097.webp","senders":["Правда"],"statuses":[],"text":"Forwarded from ! О / сука пж толерантность не вырабатывайся","kindness":1,"toxicity":3,"originality":9},{"id":"098","file":"stickers/098.webp","senders":[],"statuses":[],"text":"kleptomaanikissa / Блин, ща поделюсь болью","kindness":1,"toxicity":1,"originality":10},{"id":"099","file":"stickers/099.webp","senders":[],"statuses":[],"text":"ой носочки как у моей бабушки / которая варила мне макароны","kindness":1,"toxicity":1,"originality":4},{"id":"100","file":"stickers/100.webp","senders":[],"statuses":[],"text":"Armin / у тя айкью комностой температуры","kindness":1,"toxicity":1,"originality":9},{"id":"101","file":"stickers/101.webp","senders":["Правда"],"statuses":[],"text":"отморозок / психологи курилки","kindness":1,"toxicity":1,"originality":5},{"id":"102","file":"stickers/102.webp","senders":["tess"],"statuses":[],"text":"я съела пятку это было вкусно","kindness":1,"toxicity":1,"originality":2},{"id":"103","file":"stickers/103.webp","senders":["Алина Руслановна"],"statuses":[],"text":"Считайте калорьи мрази жирные","kindness":1,"toxicity":6,"originality":6},{"id":"104","file":"stickers/104.webp","senders":[],"statuses":[],"text":"жироид / Кира ты сдаеш онализу","kindness":1,"toxicity":1,"originality":1},{"id":"105","file":"stickers/105.webp","senders":["Правда","Алина Руслановна"],"statuses":["клофелинщица","самый умный брат"],"text":"Может это как то для развития мозга / нов / Для злокачественного?","kindness":1,"toxicity":1,"originality":3},{"id":"106","file":"stickers/106.webp","senders":[],"statuses":[],"text":"Черносотников Даня / она велосипед паркует во влагалище / какая девственница","kindness":1,"toxicity":1,"originality":6},{"id":"107","file":"stickers/107.webp","senders":["tess","бюбють"],"statuses":["мадам говно"],"text":"сука перестань быть токсичной / заткнись уже пожалуйста","kindness":1,"toxicity":8,"originality":3},{"id":"108","file":"stickers/108.webp","senders":["D!ego-BrndOw ИЗОЛЯТ"],"statuses":[],"text":"бес о / Мы посмотрим / Когда я ваши морды обгладывать буду","kindness":1,"toxicity":1,"originality":5},{"id":"109","file":"stickers/109.webp","senders":["кира обнимай"],"statuses":[],"text":"почему ты это думаешь","kindness":1,"toxicity":1,"originality":1},{"id":"110","file":"stickers/110.webp","senders":["D!ego-BrndOw ИЗОЛЯТ"],"statuses":[],"text":"Я могу научить тебя быть толерахой / Ты идиотка? / Сука, забаньте ее / Тупая пизда / Я каждый месяц мучаюсь от месячных","kindness":1,"toxicity":10,"originality":4},{"id":"111","file":"stickers/111.webp","senders":["бюбють","kalsarikännit"],"statuses":[],"text":"к маме / в канализацию","kindness":1,"toxicity":1,"originality":6},{"id":"112","file":"stickers/112.webp","senders":["мира кататония","tess"],"statuses":[],"text":"пожри берберин успокойся / ну спасибо / сучара","kindness":4,"toxicity":1,"originality":6},{"id":"113","file":"stickers/113.webp","senders":[],"statuses":[],"text":"я репер саунд клауда / bugchasing / ты даун","kindness":1,"toxicity":1,"originality":9},{"id":"114","file":"stickers/114.webp","senders":["кира обнимай"],"statuses":[],"text":"kri11 / Эй бейбы, пошлите в кс играт / какие бейбы тут только типчики сидят","kindness":1,"toxicity":1,"originality":10},{"id":"115","file":"stickers/115.webp","senders":["Калорья Молекульно́ва"],"statuses":[],"text":"Вместо мечей использовали / ребенка и кошку","kindness":1,"toxicity":1,"originality":5},{"id":"116","file":"stickers/116.webp","senders":["* elle mors"],"statuses":[],"text":"ну что за дерьмо без протеина","kindness":1,"toxicity":1,"originality":1},{"id":"117","file":"stickers/117.webp","senders":["tess","бюбють"],"statuses":["мадам говно"],"text":"сука перестань быть токсичной / заткнись уже пожалуйста","kindness":1,"toxicity":8,"originality":3},{"id":"118","file":"stickers/118.webp","senders":["tess"],"statuses":[],"text":"короче люблю жирных они еще / такие смешные когда доказывают / что это генетика и вообще / дефицит не работает жуя булку а / я ведьма ведь как я так похудела","kindness":4,"toxicity":3,"originality":3},{"id":"119","file":"stickers/119.webp","senders":["кира обнимай"],"statuses":[],"text":"интересно а когда с него / банишь то человека хуярит? / да в клитор","kindness":1,"toxicity":1,"originality":5},{"id":"120","file":"stickers/120.webp","senders":["Калорья Молекульно́ва"],"statuses":[],"text":"Удавку выбрала блевотня кошмарная","kindness":1,"toxicity":6,"originality":5}];
+
+const LAYERS = [
+  {num:'01', title:'поверхность', mood:'никто не против', bg:'linear-gradient(180deg,#16324d,#122a41)', ink:'#d8f0ff'},
+  {num:'02', title:'кромка воды', mood:'уже скользко', bg:'linear-gradient(180deg,#12293f,#0f2236)', ink:'#c3e6ff'},
+  {num:'03', title:'мелководье', mood:'так, интересно', bg:'linear-gradient(180deg,#0f2137,#0c1a2c)', ink:'#a9d7f7'},
+  {num:'04', title:'глубина', mood:'а вот и нет', bg:'linear-gradient(180deg,#0b172a,#081120)', ink:'#8cc4ea'},
+  {num:'05', title:'дно', mood:'без комментариев', bg:'linear-gradient(180deg,#070f1c,#050a13)', ink:'#7bb1d6'}
+];
+
+const CRITERIA = {
+  toxicity:    {label:'токсичность',    flip:false, note:'внизу — самые злые. Чем глубже, тем хуже'},
+  originality: {label:'оригинальность', flip:false, note:'внизу — самое странное и ни на что не похожее'}
+};
+
+const ANON = '__anon';
+const state = {crit:'originality', sender:null, open:null};
+
+const hasName = s => (s.senders || []).length > 0;
+const named = () => STICKERS.filter(hasName);
+const anon = () => STICKERS.filter(s => !hasName(s));
+
+const band = s => Math.min(5, Math.max(1, Math.ceil(s / 2)));
+const layerOf = st => band(st[state.crit]) - 1;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function senderCounts(){
+  const m = new Map();
+  STICKERS.forEach(s => (s.senders || []).forEach(n => m.set(n, (m.get(n) || 0) + 1)));
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function cardHTML(s){
+  const dim = state.sender && state.sender !== ANON && !(s.senders || []).includes(state.sender);
+  return '<button type="button" class="card' + (dim ? ' dim' : '') + '" data-id="' + s.id + '" aria-label="стикер ' + s.id + '">' +
+    '<img src="' + s.file + '" alt="стикер ' + s.id + '" loading="lazy" decoding="async">' +
+    '<span class="badge">' + esc(s[state.crit]) + '</span></button>';
+}
+
+function renderControls(){
+  const list = senderCounts();
+  const anonCount = anon().length;
+
+  document.getElementById('senders').innerHTML =
+    '<button type="button" class="chip" data-sender="" aria-pressed="' + (state.sender === null) + '">все · ' + STICKERS.length + '</button>' +
+    list.map(([n, c]) =>
+      '<button type="button" class="chip" data-sender="' + esc(n) + '" aria-pressed="' + (state.sender === n) + '">' + esc(n) + ' · ' + c + '</button>'
+    ).join('') +
+    '<button type="button" class="chip anon" data-sender="' + ANON + '" aria-pressed="' + (state.sender === ANON) + '">без подписи · ' + anonCount + '</button>';
+
+  document.querySelectorAll('.seg button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.crit === state.crit));
+  });
+
+  document.getElementById('sub').textContent =
+    STICKERS.length + ' стикеров: ' + named().length + ' с подписью и ' + anonCount + ' без. Чем ниже — тем хуже.';
+
+  document.getElementById('hint').textContent =
+    (state.sender === ANON ? 'только стикеры без распознанной подписи · ' + anonCount + ' шт. · ' : '') +
+    (state.sender && state.sender !== ANON ? 'фильтр: ' + state.sender + ' · ' : '') +
+    CRITERIA[state.crit].note;
+}
+
+function renderLayers(){
+  const host = document.getElementById('layers');
+  const onlyAnon = state.sender === ANON;
+
+  if (!onlyAnon) {
+    const groups = [[], [], [], [], []];
+    named().forEach(s => groups[layerOf(s)].push(s));
+    groups.forEach(g => g.sort((a, b) => b[state.crit] - a[state.crit] || a.id.localeCompare(b.id)));
+
+    host.innerHTML = groups.map((items, i) => {
+      const L = LAYERS[i];
+      return '<section class="layer" style="--layer-bg:' + L.bg + ';--layer-ink:' + L.ink + '">' +
+        '<div class="layer-head"><span class="layer-num">' + L.num + '</span>' +
+        '<span class="layer-title">' + L.title + '</span>' +
+        '<span class="layer-mood">' + L.mood + ' · ' + items.length + '</span></div>' +
+        (items.length
+          ? '<div class="grid">' + items.map(cardHTML).join('') + '</div>'
+          : '<p class="empty">пусто — по этому критерию сюда ничего не попало</p>') +
+        '</section>';
+    }).join('');
+  } else {
+    host.innerHTML = '';
+  }
+
+  const items = anon().sort((a, b) => b[state.crit] - a[state.crit] || a.id.localeCompare(b.id));
+  const anonSection =
+    '<section class="anon">' +
+      '<div class="anon-head"><span class="anon-title">без подписи</span>' +
+      '<span class="anon-count">' + items.length + ' шт.</span></div>' +
+      '<p class="anon-note">У этих стикеров имя отправителя не распозналось: часть текста обрезана краем, ' +
+      'или подпись слилась с сообщением. Они не разложены по слоям, чтобы не искажать картину — ' +
+      'но участвуют в оценках и открываются так же.</p>' +
+      '<div class="grid">' + items.map(cardHTML).join('') + '</div>' +
+    '</section>';
+
+  if (onlyAnon) host.innerHTML = anonSection;
+  else host.insertAdjacentHTML('beforeend', anonSection);
+}
+
+function openCard(id){
+  const s = STICKERS.find(x => x.id === id);
+  if (!s) return;
+  state.open = id;
+  const senders = s.senders || [];
+  const stat = s.statuses || [];
+  const sheet = document.getElementById('sheet');
+
+  sheet.innerHTML =
+    '<div class="grabber"></div>' +
+    '<img class="sheet-img" src="' + s.file + '" alt="стикер ' + s.id + '">' +
+    '<div class="sheet-meta">' +
+      (senders.length
+        ? senders.map(n => '<span class="tag">' + esc(n) + '</span>').join('')
+        : '<span class="tag muted">без подписи</span>') +
+      (stat.length ? stat.map(n => '<span class="tag muted">статус: ' + esc(n) + '</span>').join('') : '') +
+      '<span class="tag muted">№ ' + s.id + '</span>' +
+    '</div>' +
+    (s.text ? '<div class="quote">' + esc(s.text).replace(/ \/ /g, '<br>') + '</div>' : '') +
+    '<div class="bars">' +
+      ['toxicity', 'originality'].map(k =>
+        '<div class="bar-row"><span>' + CRITERIA[k].label + '</span>' +
+        '<span class="bar"><i style="width:' + (s[k] * 10) + '%"></i></span>' +
+        '<b>' + s[k] + '</b></div>').join('') +
+    '</div>' +
+    '<div class="sheet-actions">' +
+      '<a href="https://t.me/addstickers/kykykyrilka_by_TgEmodziBot" target="_blank" rel="noopener">В Telegram</a>' +
+      '<button type="button" id="closeSheet">Закрыть</button>' +
+    '</div>';
+
+  document.getElementById('closeSheet').addEventListener('click', closeCard);
+  sheet.classList.add('on');
+  document.getElementById('backdrop').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  history.replaceState(null, '', '#' + id);
+  bindSwipe(sheet);
+}
+
+function closeCard(){
+  document.getElementById('sheet').classList.remove('on');
+  document.getElementById('backdrop').classList.remove('on');
+  document.body.style.overflow = '';
+  state.open = null;
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+function bindSwipe(el){
+  let y0 = null;
+  el.ontouchstart = e => { y0 = e.touches[0].clientY; };
+  el.ontouchend = e => {
+    if (y0 === null) return;
+    if (e.changedTouches[0].clientY - y0 > 90 && el.scrollTop <= 0) closeCard();
+    y0 = null;
+  };
+}
+
+document.addEventListener('click', e => {
+  const crit = e.target.closest('.seg button');
+  if (crit) { state.crit = crit.dataset.crit; renderControls(); renderLayers(); return; }
+
+  const chip = e.target.closest('.chip');
+  if (chip) {
+    const v = chip.dataset.sender;
+    state.sender = v === '' ? null : v;
+    renderControls(); renderLayers(); return;
+  }
+
+  const card = e.target.closest('.card');
+  if (card) openCard(card.dataset.id);
+});
+
+document.getElementById('backdrop').addEventListener('click', closeCard);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.open) closeCard(); });
+
+renderControls();
+renderLayers();
+if (location.hash.length > 1) openCard(location.hash.slice(1));
+</script>
+</body>
+</html>
